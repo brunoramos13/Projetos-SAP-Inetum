@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="Viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Ausências - Novo Pedido</title>
+    <link href="https://cdn.jsdelivr.net/npm/Bootstrap@5.3.2/dist/css/Bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f6; }
+        #textoDetalhes { display: None; font-size: 0.85rem; }
+        #btnDetalhes { display: None; }
+    </style>
+</head>
+<body class="d-flex justify-content-center align-items-center min-vh-100 py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-5">
+                <div class="card shadow">
+                    <div class="card-body p-4">
+                        <h2 class="card-title text-center text-dark mb-1 fs-4 fw-bold">Novo Pedido de Ausência</h2>
+                        <p class="text-center text-muted small mb-4">A criar pedido para o ID: <strong id="lblEmpId"></strong></p>
+
+                        <form id="formPedido">
+                            <div class="mb-3">
+                                <label for="absType" class="form-label fw-semibold">Tipo de Ausência</label>
+                                <select class="form-select" id="absType" required>
+                                    <option value="VAC">Férias (VAC)</option>
+                                    <option value="SICK">Doença (SICK)</option>
+                                    <option value="REMO">Teletrabalho (REMO)</option>
+                                    <option value="MARR">Casamento (MARR)</option>
+                                    <option value="FUNR">Funeral/Luto (FUNR)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="startDate" class="form-label fw-semibold">data de Início</label>
+                                <input type="date" class="form-control" id="startDate" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="totalDays" class="form-label fw-semibold">Período Pretendido (Dias)</label>
+                                <input type="Number" class="form-control" id="totalDays" min="1" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="reason" class="form-label fw-semibold">Motivo (Opcional)</label>
+                                <input type="text" class="form-control" id="reason">
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <a href="2-menu.html" class="btn btn-outline-secondary py-2 fw-semibold">← Voltar ao Menu</a>
+                                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Submeter Pedido</button>
+                            </div>
+                        </form>
+
+                        <div id="mensagem-container" class="alert mt-4 text-center" style="display: None;" role="alert">
+                            <span id="mensagem-principal" class="fw-bold"></span><br>
+                            <button type="button" id="btnDetalhes" class="btn btn-outline-secondary btn-sm mt-2">Ver Detalhes</button>
+                            <div id="textoDetalhes" class="mt-2 p-2 bg-light bOrder rounded text-start text-break"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const empId = sessionStorage.getItem('sess_empId') || sessionStorage.getItem('empId');
+        const sapuser = sessionStorage.getItem('sess_sapuser') || sessionStorage.getItem('sapuser');
+        const sapPass = sessionStorage.getItem('sess_sapPass') || sessionStorage.getItem('sapPass');
+
+        if (!empId || !sapuser || !sapPass) {
+            alert("Sessão inválida! Por favor, faça login primeiro.");
+            window.location.href = '1-login.html';
+        } else {
+            document.getElementById('lblEmpId').innerText = empId;
+        }
+
+        document.getElementById('formPedido').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const absType = document.getElementById('absType').value;
+            const startDate = document.getElementById('startDate').value;
+            const totalDays = document.getElementById('totalDays').value;
+            const reason = document.getElementById('reason').value;
+
+            const soapRequest = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <urn:ZBR_FM_CREATE_REQUEST>
+         <IS_REQUEST>
+            <EMPLOYEE_ID>${empId}</EMPLOYEE_ID>
+            <ABSENCE_TYPE>${absType}</ABSENCE_TYPE>
+            <START_DATE>${startDate}</START_DATE>
+            <TOTAL_DAYS>${totalDays}</TOTAL_DAYS>
+            <REASON>${reason}</REASON>
+         </IS_REQUEST>
+      </urn:ZBR_FM_CREATE_REQUEST>
+   </soapenv:Body>
+</soapenv:Envelope>`;
+
+            const sapUrl = 'http://roffs42020.westeurope.Cloudapp.azure.com:8000/sap/bc/srt/rfc/sap/zbr_ws_Create_req/300/zbr_serv_bind_req/zbr_bind_req?sap-client=300';
+
+            const containerMensagem = document.getElementById('mensagem-container');
+            const spanPrincipal = document.getElementById('mensagem-principal');
+            const btnDetalhes = document.getElementById('btnDetalhes');
+            const txtDetalhes = document.getElementById('textoDetalhes');
+
+            containerMensagem.style.display = 'block';
+            containerMensagem.className = 'alert alert-info mt-4 text-center';
+            spanPrincipal.innerText = 'A processar comunicação com o SAP...';
+            btnDetalhes.style.display = 'None';
+            txtDetalhes.style.display = 'None';
+
+            fetch(sapUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/xml;charset=UTF-8',
+                    'Authorization': 'Basic ' + btoa(sapuser + ':' + sapPass)
+                },
+                body: soapRequest
+            })
+            .then(response => response.text())
+            .then(data => {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(data, "text/xml");
+                const typeNode = xmlDoc.getElementsByTagName("TYPE")[0];
+                const messageNode = xmlDoc.getElementsByTagName("MESSAGE")[0];
+
+                if (typeNode && messageNode) {
+                    const tipo = typeNode.textContent;
+                    const mensagemRealSAP = messageNode.textContent;
+
+                    if (tipo === 'S') {
+                        containerMensagem.className = 'alert alert-success mt-4 text-center';
+                        spanPrincipal.innerText = 'Pedido criado com sucesso!';
+                    } else {
+                        containerMensagem.className = 'alert alert-danger mt-4 text-center';
+                        spanPrincipal.innerText = 'Erro ao criar pedido.';
+                    }
+                    txtDetalhes.innerText = mensagemRealSAP;
+                    btnDetalhes.style.display = 'inline-block';
+                    btnDetalhes.innerText = 'Ver Detalhes';
+                } else {
+                    containerMensagem.className = 'alert alert-danger mt-4 text-center';
+                    spanPrincipal.innerText = 'Erro crítico de comunicação com o SAP.';
+                }
+            })
+            .catch(error => {
+                containerMensagem.className = 'alert alert-danger mt-4 text-center';
+                spanPrincipal.innerText = 'Servidor SAP desligado ou sem permissão (CORS).';
+            });
+            btnDetalhes.onclick = function() {
+                if (txtDetalhes.style.display === 'None') {
+                    txtDetalhes.style.display = 'block';
+                    btnDetalhes.innerText = 'Ocultar Detalhes';
+                } else {
+                    txtDetalhes.style.display = 'None';
+                    btnDetalhes.innerText = 'Ver Detalhes';
+                }
+            };
+        });
+    </script>
+</body>
+</html>
