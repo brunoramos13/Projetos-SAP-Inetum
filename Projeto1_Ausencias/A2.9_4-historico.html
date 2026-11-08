@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="Viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Ausências - Histórico</title>
+    <link href="https://cdn.jsdelivr.net/npm/Bootstrap@5.3.2/dist/css/Bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f6; }
+    </style>
+</head>
+<body class="d-flex justify-content-center align-items-center min-vh-100 py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-9">
+                <div class="card shadow">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <a href="2-menu.html" class="btn btn-outline-secondary btn-sm">← Voltar ao Menu</a>
+                            <span class="badge bg-primary fs-6" id="badgeColaborador">A carregar dados...</span>
+                        </div>
+
+                        <h2 class="card-title text-center text-dark mb-4 fs-4 fw-bold">O Meu Histórico de Pedidos</h2>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover align-middle text-center">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>data Pedido</th>
+                                        <th>data Início</th>
+                                        <th>Tipo</th>
+                                        <th>Dias</th>
+                                        <th>Motivo</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabelaHistorico">
+                                    <tr>
+                                        <td colspan="6" class="text-muted py-3">A comunicar com o SAP para obter os dados...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const empId = sessionStorage.getItem('sess_empId') || sessionStorage.getItem('empId');
+        const sapuser = sessionStorage.getItem('sess_sapuser') || sessionStorage.getItem('sapuser');
+        const sapPass = sessionStorage.getItem('sess_sapPass') || sessionStorage.getItem('sapPass');
+
+        if (!empId || !sapuser || !sapPass) {
+            alert("Sessão inválida! Por favor, faça login primeiro.");
+            window.location.href = '1-login.html';
+        } else {
+            document.getElementById('badgeColaborador').innerText = `Colaborador: ${empId}`;
+            carregarHistorico();
+        }
+
+        function getXmlValue(parent, tagName) {
+            const node = parent.getElementsByTagName(tagName)[0];
+            return node ? node.textContent : "";
+        }
+
+        function carregarHistorico() {
+            const sapUrl = 'http://roffs42020.westeurope.Cloudapp.azure.com:8000/sap/bc/srt/rfc/sap/zbr_ws_get_history/300/zbr_ws_bind_hist/zbr_bind_hist?sap-client=300';
+
+            const soapRequest = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <urn:ZBR_FM_GET_HISTORY>
+         <ET_REQUESTS>
+         </ET_REQUESTS>
+         <IV_EMPLOYEE_ID>${empId}</IV_EMPLOYEE_ID>
+      </urn:ZBR_FM_GET_HISTORY>
+   </soapenv:Body>
+</soapenv:Envelope>`;
+            const tbody = document.getElementById('tabelaHistorico');
+
+            fetch(sapUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/xml;charset=UTF-8',
+                    'Authorization': 'Basic ' + btoa(sapuser + ':' + sapPass)
+                },
+                body: soapRequest
+            })
+            .then(response => response.text())
+            .then(data => {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(data, "text/xml");
+                const items = xmlDoc.getElementsByTagName("item");
+
+                tbody.innerHTML = "";
+
+                if (items.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-muted py-3">Não existem pedidos registados para este colaborador.</td></tr>`;
+                    return;
+                }
+                for (let i = 0; i < items.length; i++) {
+                    const reqDate = getXmlValue(items[i], "CREATED_ON");
+                    const startDate = getXmlValue(items[i], "START_DATE");
+                    const absType = getXmlValue(items[i], "ABSENCE_TYPE");
+                    const totalDays = getXmlValue(items[i], "TOTAL_DAYS");
+                    const reason = getXmlValue(items[i], "REASON") || '-';
+                    const status = getXmlValue(items[i], "STATUS");
+
+                    let badgeEstado = `<span class="badge bg-warning text-dark">Pendente</span>`;
+                    if (status === 'A') {
+                        badgeEstado = `<span class="badge bg-success">Aprovado</span>`;
+                    } else if (status === 'R') {
+                        badgeEstado = `<span class="badge bg-danger">Rejeitado</span>`;
+                    }
+                    const tr = `<tr>
+                        <td>${reqDate}</td>
+                        <td>${startDate}</td>
+                        <td class="fw-semibold">${absType}</td>
+                        <td>${totalDays}</td>
+                        <td>${reason}</td>
+                        <td>${badgeEstado}</td>
+                    </tr>`;
+
+                    tbody.innerHTML += tr;
+                }
+            })
+            .catch(error => {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-danger fw-bold py-3">Erro ao comunicar com o servidor SAP (Verifique CORS).</td></tr>`;
+            });
+        }
+    </script>
+</body>
+</html>
