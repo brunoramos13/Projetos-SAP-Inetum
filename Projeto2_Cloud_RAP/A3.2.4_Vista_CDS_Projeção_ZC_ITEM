@@ -1,0 +1,31 @@
+@EnduserText.label: 'Projection View - Itens Upload'
+@AccessControl.AuthorizationCheck: #NOT_REQUIRED
+@Metadata.allowExtensions: true
+define View entity ZC_PO_UP_ITEM
+  as projection on ZR_PO_UP_ITEM
+{
+  key ItemUuid,
+      UploadUuid,
+      ExcelRow,
+      PurchaseOrderType,
+      CompanyCode,
+      PurchasingOrganization,
+      PurchasingGroup,
+      Supplier,
+      Material,
+      Plant,
+      DocumentCurrency,
+      NetPriceAmount,
+      QuantityUnit,
+      Quantity,
+      DeliveryDate,
+      PurchaseOrder,
+      ItemStatus,
+      ItemMessage,
+      CreatedBy,
+      CreatedAt,
+      LastChangedBy,
+      LastChangedAt,
+      LocalLastChangedAt,
+      _Upload : redirected to parent ZC_PO_UP_HEAD
+}
