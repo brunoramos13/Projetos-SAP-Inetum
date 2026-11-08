@@ -411,7 +411,7 @@ CLASS lhc_Upload IMPLEMENTATION.
           lv_tracking_id = 'ERRO_UUID'.
       ENDTRY.
 
-      " Preencher os itens usando um CID ÚNICO com base no nosso carimbo
+      " Preencher os itens usando um CID ÚNICO com base no carimbo
       DATA lt_po_items TYPE TABLE FOR CREATE I_PurchaseOrderTP_2\_PurchaseOrderItem.
       lt_po_items = VALUE #( (
         %cid_ref = |PO_{ lv_tracking_id }|
@@ -426,7 +426,7 @@ CLASS lhc_Upload IMPLEMENTATION.
         ) )
       ) ).
 
-      " 4. Chamar a API Standard Moderna (Injetando o Carimbo e usando CID ÚNICO)
+      " 4. Chamar a API Standard Moderna (Injetando o Carimbo e usando o CID ÚNICO)
       MODIFY ENTITIES OF I_PurchaseOrderTP_2 PRIVILEGED
         ENTITY PurchaseOrder
         CREATE SET FIELDS WITH VALUE #( (
@@ -543,7 +543,7 @@ CLASS lhc_Upload IMPLEMENTATION.
       DATA ls_create_log LIKE LINE OF lt_create_logs.
       ls_create_log-%tky = ls_upload-%tky.
 
-      " 1. LER O CARIMBO que criamos
+      " 1. LER O CARIMBO
       DATA lv_tracking_id TYPE c LENGTH 12.
       TRY.
           cl_system_uuid=>convert_uuid_x16_static(
@@ -555,7 +555,7 @@ CLASS lhc_Upload IMPLEMENTATION.
           lv_tracking_id = 'ERRO_UUID'.
       ENDTRY.
 
-      " 2. Ir buscar o numero da PO exata usando O TRINCO TRIPLO (User + Data Hoje + Carimbo Único)
+      " 2. Ir buscar o numero da PO exata com o TRINCO TRIPLO (User + Data Hoje + Carimbo Único)
       SELECT PurchaseOrder
         FROM I_PurchaseOrderAPI01 WITH PRIVILEGED ACCESS
         WHERE CreatedByUser              = @sy-uname
