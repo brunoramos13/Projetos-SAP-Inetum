@@ -1,0 +1,39 @@
+@AccessControl.AuthorizationCheck: #NOT_REQUIRED
+@EnduserText.label: 'Base View - Itens Upload'
+@Metadata.ignorePropagatedAnnotations: true
+define View entity ZR_PO_UP_ITEM
+  as select from zpo_up_item
+  association to parent ZR_PO_UP_HEAD as _Upload on $projection.UploadUuid = _Upload.UploadUuid
+{
+  key item_uuid             as ItemUuid,
+      upload_uuid           as UploadUuid,
+      excel_row             as ExcelRow,
+      po_type               as PurchaseOrderType,
+      company_code          as CompanyCode,
+      purch_org             as PurchasingOrganization,
+      purch_group           as PurchasingGroup,
+      supplier              as Supplier,
+      material              as Material,
+      plant                 as Plant,
+      doc_currency          as DocumentCurrency,
+      @Semantics.amount.currencyCode: 'DocumentCurrency'
+      net_price_amount      as NetPriceAmount,
+      quantity_unit         as QuantityUnit,
+      @Semantics.quantity.unitOfMeasure: 'QuantityUnit'
+      quantity              as Quantity,
+      delivery_date         as DeliveryDate,
+      Purchase_Order        as PurchaseOrder,
+      item_status           as ItemStatus,
+      item_message          as ItemMessage,
+      @Semantics.user.CreatedBy: true
+      Created_by            as CreatedBy,
+      @Semantics.systemDateTime.CreatedAt: true
+      Created_at            as CreatedAt,
+      @Semantics.user.lastChangedBy: true
+      last_changed_by       as LastChangedBy,
+      @Semantics.systemDateTime.lastChangedAt: true
+      last_changed_at       as LastChangedAt,
+      @Semantics.systemDateTime.localInstanceLastChangedAt: true
+      local_last_changed_at as LocalLastChangedAt,
+      _Upload
+}
