@@ -1,0 +1,14 @@
+@AccessControl.AuthorizationCheck: #NOT_REQUIRED
+@EnduserText.label: 'Base View - Logs'
+define View entity ZR_PO_UP_LOG
+  as select from zpo_up_log
+  association to parent ZR_PO_UP_HEAD as _Upload on $projection.UploadUuid = _Upload.UploadUuid
+{
+  key log_uuid    as LogUuid,
+      upload_uuid as UploadUuid,
+      msg_type    as MsgType,
+      msg_text    as MsgText,
+      @Semantics.systemDateTime.CreatedAt: true
+      Created_at  as CreatedAt,
+      _Upload
+}
