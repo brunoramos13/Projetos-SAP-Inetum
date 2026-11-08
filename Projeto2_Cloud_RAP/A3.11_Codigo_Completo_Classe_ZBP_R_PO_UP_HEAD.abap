@@ -22,7 +22,6 @@ CLASS lhc_Upload IMPLEMENTATION.
   METHOD get_global_authorizations.
   ENDMETHOD.
 
-
   METHOD ParseExcel.
     TYPES: BEGIN OF ty_excel_row,
              purchaseordertype      TYPE string, " Coluna A
