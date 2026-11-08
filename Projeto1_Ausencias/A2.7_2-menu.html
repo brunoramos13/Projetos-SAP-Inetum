@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="Viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Ausências - Menu</title>
+    <link href="https://cdn.jsdelivr.net/npm/Bootstrap@5.3.2/dist/css/Bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f6; }
+    </style>
+</head>
+<body class="d-flex justify-content-center align-items-center min-vh-100 py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-5">
+                <div class="card shadow text-center">
+                    <div class="card-body p-4">
+                        <h2 class="card-title text-dark mb-2 fs-4 fw-bold">Menu Principal</h2>
+                        <p class="text-muted mb-4" id="txtBemVindo">Bem-vindo!</p>
+
+                        <div class="d-grid gap-3">
+                            <a href="3-formulario.html" class="btn btn-primary py-2 fw-bold">Criar Novo Pedido</a>
+                            <a href="4-historico.html" class="btn btn-outline-primary py-2 fw-bold">Ver Histórico de Pedidos</a>
+                            <hr class="my-2">
+                            <button type="button" onclick="terminarSessao()" class="btn btn-outline-danger py-2 fw-semibold">Terminar Sessão (Logout)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const empId = sessionStorage.getItem('sess_empId') || sessionStorage.getItem('empId');
+        const sapuser = sessionStorage.getItem('sess_sapuser') || sessionStorage.getItem('sapuser');
+
+        if (!empId || !sapuser) {
+            alert("Sessão inválida! Por favor, faça login primeiro.");
+            window.location.href = '1-login.html';
+        } else {
+            document.getElementById('txtBemVindo').innerText = `Bem-vindo, Colaborador ${empId}!`;
+        }
+        function terminarSessao() {
+            sessionStorage.clear();
+            window.location.href = '1-login.html';
+        }
+    </script>
+</body>
+</html>
