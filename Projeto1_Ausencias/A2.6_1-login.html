@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="Viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Ausências - login</title>
+    <link href="https://cdn.jsdelivr.net/npm/Bootstrap@5.3.2/dist/css/Bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f6; }
+    </style>
+</head>
+<body class="d-flex justify-content-center align-items-center min-vh-100 py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-5">
+                <div class="card shadow">
+                    <div class="card-body p-4">
+                        <h2 class="card-title text-center text-dark mb-4 fs-4 fw-bold">Portal de Ausências - login</h2>
+                        <form id="formLogin">
+                            <div class="mb-3">
+                                <label for="selColaborador" class="form-label fw-semibold">Selecionar Colaborador</label>
+                                <select class="form-select" id="selColaborador" required>
+                                    <option value="" disabled selected>Escolha um colaborador...</option>
+                                    <option value="C0001">C0001 - João Silva</option>
+                                    <option value="C0002">C0002 - Rui Costa</option>
+                                    <option value="C0003">C0003 - Bruno Ramos</option>
+                                    <option value="C0004">C0004 - Ana Sousa</option>
+                                    <option value="C0005">C0005 - Beatriz Santos</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="inpuser" class="form-label fw-semibold">SAP user</label>
+                                <input type="text" class="form-control" id="inpuser" value="IPG05" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="inpPass" class="form-label fw-semibold">Password SAP</label>
+                                <input type="Password" class="form-control" id="inpPass" value="ipg2026_BR" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Entrar no Portal</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('formLogin').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const empId = document.getElementById('selColaborador').value;
+            const sapuser = document.getElementById('inpuser').value.trim();
+            const sapPass = document.getElementById('inpPass').value;
+
+            sessionStorage.setItem('empId', empId);
+            sessionStorage.setItem('sapuser', sapuser);
+            sessionStorage.setItem('sapPass', sapPass);
+            sessionStorage.setItem('sess_empId', empId);
+            sessionStorage.setItem('sess_sapuser', sapuser);
+            sessionStorage.setItem('sess_sapPass', sapPass);
+            window.location.href = '2-menu.html';
+        });
+    </script>
+</body>
+</html>
