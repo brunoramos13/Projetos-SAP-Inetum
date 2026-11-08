@@ -1,0 +1,13 @@
+@AccessControl.AuthorizationCheck: #NOT_REQUIRED
+@EnduserText.label: 'Projection View - Logs'
+@Metadata.allowExtensions: true
+define View entity ZC_PO_UP_LOG
+  as projection on ZR_PO_UP_LOG
+{
+  key LogUuid,
+      UploadUuid,
+      MsgType,
+      MsgText,
+      CreatedAt,
+      _Upload : redirected to parent ZC_PO_UP_HEAD
+}
