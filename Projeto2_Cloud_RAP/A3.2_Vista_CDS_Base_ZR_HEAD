@@ -1,0 +1,27 @@
+@AccessControl.AuthorizationCheck: #NOT_REQUIRED
+@EnduserText.label: 'Base View - Upload PO'
+@Metadata.ignorePropagatedAnnotations: true
+define Root View entity ZR_PO_UP_HEAD
+  as select from zpo_up_head
+  composition [0..*] of ZR_PO_UP_ITEM as _Itens
+  composition [0..*] of ZR_PO_UP_LOG  as _Logs
+{
+  key upload_uuid           as UploadUuid,
+      Attachment            as Attachment,
+      @Semantics.mimeType: true
+      mimetype              as MimeType,
+      filename              as Filename,
+      @Semantics.user.CreatedBy: true
+      Created_by            as CreatedBy,
+      @Semantics.systemDateTime.CreatedAt: true
+      Created_at            as CreatedAt,
+      @Semantics.user.lastChangedBy: true
+      last_changed_by       as LastChangedBy,
+      @Semantics.systemDateTime.lastChangedAt: true
+      last_changed_at       as LastChangedAt,
+      @Semantics.systemDateTime.localInstanceLastChangedAt: true
+      local_last_changed_at as LocalLastChangedAt,
+      Purchase_Order        as PurchaseOrder,
+      _Itens,
+      _Logs
+}
